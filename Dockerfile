@@ -18,8 +18,10 @@ SHELL ["cmd", "/S", "/C"]
 ARG CMAKE_GENERATOR="Visual Studio 17 2022"
 ENV CMAKE_GENERATOR=${CMAKE_GENERATOR}
 
+RUN mkdir C:\\TEMP
+
 # download VS Build Tools bootstrapper
-ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\TEMP\vs_buildtools.exe
+ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\\TEMP\\vs_buildtools.exe
 
 RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --installPath "C:\BuildTools" \
@@ -52,7 +54,7 @@ FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS runtime
 SHELL ["cmd", "/S", "/C"]
 
 # Copy installed MLIR artifacts from the builder stage
-COPY --from=builder C:\mlir-install C:\mlir-install
+COPY --from=builder C:\\mlir-install C:\mlir-install
 
 # Add mlir tools to PATH
 ENV PATH="C:\mlir-install\bin;%PATH%"
@@ -66,10 +68,10 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS dev
 SHELL ["cmd", "/S", "/C"]
 
 # Copy build tools and mlir install from builder
-COPY --from=builder C:\BuildTools C:\BuildTools
-COPY --from=builder C:\mlir-install C:\mlir-install
+COPY --from=builder C:\\BuildTools C:\\BuildTools
+COPY --from=builder C:\\mlir-install C:\\mlir-install
 
-ENV PATH="C:\mlir-install\bin;%PATH%"
+ENV PATH="C:\\mlir-install\\bin;%PATH%"
 
 # Add entrypoint that initialises VS vars then launches the requested command (or cmd)
 COPY scripts\entrypoint-vcvars.bat C:\init-vcvars.bat
