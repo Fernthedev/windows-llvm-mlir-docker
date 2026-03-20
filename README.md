@@ -1,6 +1,8 @@
 # VS + MLIR Windows Docker
 This is a docker container that provides VS 2022 build tools and MLIR tools.
 
+I needed this for various of my projects and seeing as there was no convenient way of getting prebuilt MLIR tools I decided to make this docker container. Have fun.
+
 # Usage:
 ```sh
 docker pull ghcr.io/Fernthedev/vs-mlir-windows:latest

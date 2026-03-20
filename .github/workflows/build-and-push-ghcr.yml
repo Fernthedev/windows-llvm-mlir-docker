@@ -74,4 +74,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
         #   target: ${{ env.TARGET }}
-          platforms: windows/amd64
+        #   platforms: windows/amd64
