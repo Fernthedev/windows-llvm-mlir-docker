@@ -84,7 +84,8 @@ jobs:
         run: |
           $tags = '${{ steps.meta.outputs.tags }}'
           if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
-          $tagList = $tags -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+          # Split tags on commas, newlines or whitespace (handles CRLF and newline-separated lists)
+          $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
           Write-Host "Tags: $($tagList -join ',')"
 
           $tagArgs = $tagList | ForEach-Object { "-t `"$_`"" }
