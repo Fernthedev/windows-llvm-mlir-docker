@@ -38,11 +38,11 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
 # Cleanup
 # RUN del C:\TEMP\vs_buildtools.exe
 
-# copy build helper script into the builder image
-COPY scripts\build-and-install-mlir.bat C:\BuildTools\build-and-install-mlir.bat
+# copy build helper script into the builder image (use forward slashes for build context)
+COPY scripts/build-and-install-mlir.bat C:/BuildTools/build-and-install-mlir.bat
 
 # Copy pre-populated llvm-project submodule into image (must be initialized locally)
-COPY llvm-project C:\llvm-project
+COPY llvm-project C:/llvm-project
 
 # Run the helper script to clone, build, and install MLIR into C:\mlir-install
 RUN C:\BuildTools\build-and-install-mlir.bat
@@ -54,7 +54,7 @@ FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS runtime
 SHELL ["cmd", "/S", "/C"]
 
 # Copy installed MLIR artifacts from the builder stage
-COPY --from=builder C:\\mlir-install C:\mlir-install
+COPY --from=builder C:/mlir-install C:/mlir-install
 
 # Add mlir tools to PATH
 ENV PATH="C:\mlir-install\bin;%PATH%"
@@ -68,12 +68,12 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS dev
 SHELL ["cmd", "/S", "/C"]
 
 # Copy build tools and mlir install from builder
-COPY --from=builder C:\\BuildTools C:\\BuildTools
-COPY --from=builder C:\\mlir-install C:\\mlir-install
+COPY --from=builder C:/BuildTools C:/BuildTools
+COPY --from=builder C:/mlir-install C:/mlir-install
 
 ENV PATH="C:\\mlir-install\\bin;%PATH%"
 
 # Add entrypoint that initialises VS vars then launches the requested command (or cmd)
-COPY scripts\entrypoint-vcvars.bat C:\init-vcvars.bat
+COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
 ENTRYPOINT ["C:\\\\init-vcvars.bat"]
 CMD ["cmd"]
