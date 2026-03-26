@@ -23,7 +23,7 @@ RUN mkdir C:\\TEMP
 # download VS Build Tools bootstrapper
 ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\\TEMP\\vs_buildtools.exe
 
-RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
+RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
     --add Microsoft.Component.MSBuild \
@@ -32,7 +32,7 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Component.Roslyn.Compiler \
     --add Microsoft.VisualStudio.Component.TextTemplating \
     --add Microsoft.VisualStudio.Component.VC.CMake.Project \
-    # --add Microsoft.VisualStudio.Component.VC.CoreIde \
+    --add Microsoft.VisualStudio.Component.VC.CoreIde \
     --add Microsoft.VisualStudio.Component.VC.Llvm.Clang \
     --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset \
     --add Microsoft.VisualStudio.Component.VC.Redist.14.Latest \
@@ -41,7 +41,7 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang \
-    # --add Microsoft.VisualStudio.ComponentGroup.WebToolsExtensions.CMake \
+    --add Microsoft.VisualStudio.ComponentGroup.WebToolsExtensions.CMake \
     --add Microsoft.VisualStudio.Workload.CoreEditor \
     --add Microsoft.VisualStudio.Workload.NativeDesktop \
     --add Microsoft.VisualStudio.Component.Git \
