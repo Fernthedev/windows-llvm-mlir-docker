@@ -26,10 +26,15 @@ jobs:
       IMAGE_REPO: ${{ github.repository_owner }}/vs-mlir-windows
 
     steps:
-      - name: Checkout (with submodules)
+      - name: Checkout (with shallow submodules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 1
+          set-safe-directory: true
+          # Shallow submodules (fetch-depth: 1) speeds up large submodule checkouts
+          # submodules-depth: 1
+          
 
       - name: Prepare target
         run: |
