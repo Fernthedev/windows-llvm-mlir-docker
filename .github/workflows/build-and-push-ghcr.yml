@@ -78,7 +78,7 @@ jobs:
     #     #   platforms: windows/amd64
 
 
-      - name: Build and push (Windows native)
+      - name: Build and push (Windows native with cache)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -88,8 +88,10 @@ jobs:
           $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
           Write-Host "Tags: $($tagList -join ',')"
 
+          # Use the first tag as the cache source
+          $cacheFrom = $tagList[0]
           $tagArgs = $tagList | ForEach-Object { "-t `"$_`"" }
-          $buildCmd = "docker build $($tagArgs -join ' ') -f Dockerfile ."
+          $buildCmd = "docker build $($tagArgs -join ' ') --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from=$cacheFrom -f Dockerfile ."
           Write-Host "Running: $buildCmd"
           iex $buildCmd
 
