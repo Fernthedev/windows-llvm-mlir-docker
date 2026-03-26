@@ -83,7 +83,7 @@ jobs:
     #     #   platforms: windows/amd64
 
 
-      - name: Build and push (Windows native with cache)
+      - name: Build image (Windows native with cache)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -100,6 +100,13 @@ jobs:
           Write-Host "Running: $buildCmd"
           iex $buildCmd
 
+      - name: Push image (Windows native)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tags = '${{ steps.meta.outputs.tags }}'
+          if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
+          $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
           foreach ($t in $tagList) {
             Write-Host "Pushing $t"
             docker push $t
