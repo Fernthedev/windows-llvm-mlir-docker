@@ -3,6 +3,9 @@ REM Build and install LLVM/MLIR tools on Windows (Visual Studio Build Tools)
 REM Usage: run from an elevated Developer Command Prompt or regular shell after calling vcvarsall.bat
 
 REM 1) Ensure Visual Studio environment is set up (adjust path if Build Tools installed elsewhere)
+dir "C:\"
+dir "C:\BuildTools\"
+
 call "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 IF ERRORLEVEL 1 (
   echo Failed to set Visual Studio environment.
@@ -36,11 +39,12 @@ set "BUILD_DIR=%SRC_DIR%\build"
 set "INSTALL_PREFIX=C:\mlir-install"
 
 REM Initialise Visual Studio environment if available (no-op otherwise)
-if exist "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit /b %errorlevel%
-) else (
-  echo WARNING: vcvarsall.bat not found; continuing without VS env
-)
+@REM if exist "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
+@REM   call "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 || exit /b %errorlevel%
+@REM ) else (
+@REM   echo WARNING: vcvarsall.bat not found; continuing without VS env
+@REM   EXIT /B 1
+@REM )
 
 REM Ensure source is present (we expect a checked-out submodule at %SRC_DIR%)
 if not exist "%SRC_DIR%" (
