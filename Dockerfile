@@ -1,28 +1,9 @@
-# Multi-stage Dockerfile for building LLVM/MLIR (builder) and producing images
-#
-# Targets:
-#  - default (dev): image with both MLIR installed and Visual Studio C++ Build Tools
-#    build default (dev): `docker build -t mlir-windows .`  # produces dev image
-#  - runtime: small image with only installed MLIR artifacts in C:\mlir-install
-#    build runtime only: `docker build --target runtime -t mlir-windows:runtime .`
-#
-# Build args:
-#  - CMAKE_GENERATOR: override the Visual Studio CMake generator (default: "Visual Studio 17 2022")
-#    example: `docker build --build-arg CMAKE_GENERATOR="Visual Studio 15 2017 Win64" .`
 
-# Builder stage: install VS Build Tools, clone and build LLVM/MLIR
-FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS builder
-
+# Stage 1: Install Visual Studio Build Tools
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS vs-buildtools
 SHELL ["cmd", "/S", "/C"]
-
-ARG CMAKE_GENERATOR="Visual Studio 17 2022"
-ENV CMAKE_GENERATOR=${CMAKE_GENERATOR}
-
-RUN mkdir C:\\TEMP
-
-# download VS Build Tools bootstrapper
-ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\\TEMP\\vs_buildtools.exe
-
+RUN mkdir C:\TEMP
+ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\TEMP\vs_buildtools.exe
 RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
@@ -41,56 +22,28 @@ RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang \
-    --add Microsoft.VisualStudio.ComponentGroup.WebToolsExtensions.CMake \
     --add Microsoft.VisualStudio.Workload.CoreEditor \
     --add Microsoft.VisualStudio.Workload.NativeDesktop \
     --add Microsoft.VisualStudio.Component.Git \
     --includeRecommended \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0
 
-# Cleanup
-# RUN del C:\TEMP\vs_buildtools.exe
-
-# copy build helper script into the builder image (use forward slashes for build context)
+# Stage 2: Build MLIR (and optionally clang)
+FROM vs-buildtools AS build-mlir
+SHELL ["cmd", "/S", "/C"]
+ARG CMAKE_GENERATOR="Visual Studio 17 2022"
+ENV CMAKE_GENERATOR=${CMAKE_GENERATOR}
+# Copy only what is needed for the build
 COPY scripts/build-and-install-mlir.bat C:/BuildTools/build-and-install-mlir.bat
-
-# Copy pre-populated llvm-project submodule into image (must be initialized locally)
 COPY llvm-project C:/llvm-project
-
-# Run the helper script to clone, build, and install MLIR into C:\mlir-install
 RUN C:\BuildTools\build-and-install-mlir.bat
 
+# Stage 3: Final dev image with only VS Build Tools and MLIR install
+FROM vs-buildtools AS dev
+SHELL ["cmd", "/S", "/C"]
+# Copy only the installed MLIR tools/binaries
+COPY --from=build-mlir C:/mlir-install C:/mlir-install
 COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
-ENTRYPOINT ["C:\\\\init-vcvars.bat"]
+ENV PATH="C:\mlir-install\bin;%PATH%"
+ENTRYPOINT ["C:\\init-vcvars.bat"]
 CMD ["cmd"]
-
-
-# # Runtime stage: keep only the installed artifacts
-# FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS runtime
-
-# SHELL ["cmd", "/S", "/C"]
-
-# # Copy installed MLIR artifacts from the builder stage
-# COPY --from=builder C:/mlir-install C:/mlir-install
-
-# # Add mlir tools to PATH
-# ENV PATH="C:\mlir-install\bin;%PATH%"
-
-# CMD ["cmd", "/S", "/C", "echo MLIR runtime image ready. Use C:\\mlir-install\\bin\\mlir-* tools."]
-
-# # Dev image: includes both MLIR install and the C++ Build Tools for development/testing.
-# # Use this target when you want the build environment present inside the image.
-# FROM builder AS dev
-
-# SHELL ["cmd", "/S", "/C"]
-
-# # Copy build tools and mlir install from builder
-# # COPY --from=builder C:/BuildTools C:/BuildTools
-# COPY --from=builder C:/mlir-install C:/mlir-install
-
-# ENV PATH="C:\\mlir-install\\bin;%PATH%"
-
-# # Add entrypoint that initialises VS vars then launches the requested command (or cmd)
-# COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
-# ENTRYPOINT ["C:\\\\init-vcvars.bat"]
-# CMD ["cmd"]
