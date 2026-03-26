@@ -6,7 +6,7 @@ REM 1) Ensure Visual Studio environment is set up (adjust path if Build Tools in
 call "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64
 IF ERRORLEVEL 1 (
   echo Failed to set Visual Studio environment.
-  @REM EXIT /B 1
+  EXIT /B 1
 )
 
 REM 2) Expect `llvm-project` as a git submodule in repository root
@@ -15,7 +15,7 @@ if not exist llvm-project (
   echo Initialize it locally with:
   echo   git submodule update --init --recursive
   echo Then re-run this script.
-  @REM EXIT /B 1
+  EXIT /B 1
 )
 
 REM 3) Configure build
