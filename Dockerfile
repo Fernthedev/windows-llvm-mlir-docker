@@ -3,7 +3,8 @@
 FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS vs-buildtools
 SHELL ["cmd", "/S", "/C"]
 RUN mkdir C:\TEMP
-ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\TEMP\vs_buildtools.exe
+ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\\TEMP\\vs_buildtools.exe
+
 RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
