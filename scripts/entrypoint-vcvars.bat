@@ -11,7 +11,7 @@ if exist "C:\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
 )
 
 REM Run provided command or drop to interactive cmd
-if "%~*"=="" (
+if "%*"=="" (
   cmd
 ) else (
   cmd /S /C "%*"
