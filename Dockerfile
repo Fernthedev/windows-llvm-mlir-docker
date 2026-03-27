@@ -28,6 +28,9 @@ RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Component.Git \
     --includeRecommended \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0
+# Print installer logs for debugging
+RUN dir C:\TEMP
+RUN type C:\TEMP\dd_vs_buildtools*.log || echo "No log found"
 
 # Stage 2: Build MLIR (and optionally clang)
 FROM vs-buildtools AS build-mlir
