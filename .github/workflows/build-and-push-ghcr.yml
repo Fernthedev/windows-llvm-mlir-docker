@@ -122,7 +122,7 @@ jobs:
               iex "docker build $($tagArgs -join ' ') -f Dockerfile ."
               break
             } catch {
-              Write-Host "Build failed on attempt $attempt: $($_)"
+              Write-Host "Build failed on attempt ${attempt}: $($_)"
               if ($attempt -ge 3) { throw "Build failed after 3 attempts" }
               Start-Sleep -Seconds (10 * $attempt)
               Write-Host "Retrying..."
