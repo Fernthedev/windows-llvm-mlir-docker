@@ -67,7 +67,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Ensure Docker is in Windows containers (Hyper-V) mode
+      - name: Ensure Docker is in Windows containers mode
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -77,24 +77,8 @@ jobs:
             & $cli -SwitchDaemon windows
             Start-Sleep -Seconds 10
           } else {
-            Write-Host "DockerCli.exe not found; attempting to continue without explicit switch."
+            Write-Host "DockerCli.exe not found; runner may already be in Windows containers mode or unsupported. Continuing."
           }
-
-          # Ensure Docker daemon default isolation is Hyper-V for Windows container builds
-          $daemonPath = 'C:\ProgramData\Docker\config\daemon.json'
-          if (-not (Test-Path (Split-Path $daemonPath))) { New-Item -ItemType Directory -Path (Split-Path $daemonPath) -Force | Out-Null }
-          if (Test-Path $daemonPath) { Copy-Item $daemonPath "$daemonPath.bak" -Force }
-          try {
-            $json = if (Test-Path $daemonPath) { Get-Content $daemonPath -Raw | ConvertFrom-Json } else { @{} }
-          } catch {
-            $json = @{}
-          }
-          $json.'default-isolation' = 'hyperv'
-          $json | ConvertTo-Json -Depth 10 | Out-File -FilePath $daemonPath -Encoding utf8
-
-          # Restart Docker Desktop service (best-effort)
-          Restart-Service -Name com.docker.service -ErrorAction SilentlyContinue
-          Start-Sleep -Seconds 15
           docker info
 
   # Clean up Docker data to avoid hcsshim ImportLayer errors
