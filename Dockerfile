@@ -11,10 +11,10 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache  \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
     --add Microsoft.Component.MSBuild \
-    --add Microsoft.VisualStudio.Component.CoreEditor \
-    --add Microsoft.VisualStudio.Component.DiagnosticTools \
-    --add Microsoft.VisualStudio.Component.Roslyn.Compiler \
-    --add Microsoft.VisualStudio.Component.TextTemplating \
+    # --add Microsoft.VisualStudio.Component.CoreEditor \
+    # --add Microsoft.VisualStudio.Component.DiagnosticTools \
+    # --add Microsoft.VisualStudio.Component.Roslyn.Compiler \
+    # --add Microsoft.VisualStudio.Component.TextTemplating \
     --add Microsoft.VisualStudio.Component.VC.CMake.Project \
     --add Microsoft.VisualStudio.Component.VC.CoreIde \
     --add Microsoft.VisualStudio.Component.VC.Llvm.Clang \
@@ -25,7 +25,7 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache  \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang \
-    --add Microsoft.VisualStudio.Workload.CoreEditor \
+    # --add Microsoft.VisualStudio.Workload.CoreEditor \
     --add Microsoft.VisualStudio.Workload.NativeDesktop \
     --add Microsoft.VisualStudio.Component.Git \
     --includeRecommended \
