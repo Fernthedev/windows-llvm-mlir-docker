@@ -7,7 +7,7 @@ RUN mkdir C:\TEMP
 ADD https://aka.ms/vscollect.exe C:\\TEMP\\collect.exe
 ADD https://aka.ms/vs/17/release/vs_buildtools.exe C:\\TEMP\\vs_buildtools.exe
 
-RUN C:\TEMP\vs_buildtools.exe --wait --norestart --nocache install \
+RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache  \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
     --add Microsoft.Component.MSBuild \
@@ -51,5 +51,6 @@ SHELL ["cmd", "/S", "/C"]
 COPY --from=build-mlir C:/mlir-install C:/mlir-install
 COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
 ENV PATH="C:\mlir-install\bin;%PATH%"
-ENTRYPOINT ["C:\\init-vcvars.bat"]
+# ENTRYPOINT ["C:\\init-vcvars.bat"]
+ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "-arch=amd64", "&&", "powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
 CMD ["cmd"]
