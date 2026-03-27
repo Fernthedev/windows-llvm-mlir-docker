@@ -20,7 +20,7 @@ permissions:
 jobs:
   build-and-push:
     name: Build and push
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       REGISTRY: ghcr.io
       IMAGE_REPO: ${{ github.repository_owner }}/vs-mlir-windows
