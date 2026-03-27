@@ -67,6 +67,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
+  # Clean up Docker data to avoid hcsshim ImportLayer errors
+      - name: Docker system prune (cleanup)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          docker system prune -af
+
     # https://github.com/moby/buildkit/issues/6009
     #   - name: Set up Docker Buildx
     #     uses: docker/setup-buildx-action@v4
