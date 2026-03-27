@@ -103,23 +103,47 @@ jobs:
     #     #   target: ${{ env.TARGET }}
     #     #   platforms: windows/amd64
 
-
-      - name: Build image (Windows native with cache)
+      - name: Build image (Windows native, disable BuildKit, retry)
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          DOCKER_BUILDKIT: '0'
+          COMPOSE_DOCKER_CLI_BUILD: '0'
         run: |
           $tags = '${{ steps.meta.outputs.tags }}'
           if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
-          # Split tags on commas, newlines or whitespace (handles CRLF and newline-separated lists)
           $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
-          Write-Host "Tags: $($tagList -join ',')"
-
-          # Use the first tag as the cache source
-          $cacheFrom = $tagList[0]
           $tagArgs = $tagList | ForEach-Object { "-t `"$_`"" }
-          $buildCmd = "docker build $($tagArgs -join ' ') -f Dockerfile ."
-          Write-Host "Running: $buildCmd"
-          iex $buildCmd
+          $attempt=0
+          while ($attempt -lt 3) {
+            try {
+              $attempt++
+              Write-Host "Build attempt $attempt"
+              iex "docker build $($tagArgs -join ' ') -f Dockerfile ."
+              break
+            } catch {
+              Write-Host "Build failed on attempt $attempt: $_"
+              if ($attempt -ge 3) { throw "Build failed after 3 attempts" }
+              Start-Sleep -Seconds (10 * $attempt)
+              Write-Host "Retrying..."
+            }
+          }
+      # - name: Build image (Windows native with cache)
+      #   if: runner.os == 'Windows'
+      #   shell: pwsh
+      #   run: |
+      #     $tags = '${{ steps.meta.outputs.tags }}'
+      #     if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
+      #     # Split tags on commas, newlines or whitespace (handles CRLF and newline-separated lists)
+      #     $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+      #     Write-Host "Tags: $($tagList -join ',')"
+
+      #     # Use the first tag as the cache source
+      #     $cacheFrom = $tagList[0]
+      #     $tagArgs = $tagList | ForEach-Object { "-t `"$_`"" }
+      #     $buildCmd = "docker build $($tagArgs -join ' ') -f Dockerfile ."
+      #     Write-Host "Running: $buildCmd"
+      #     iex $buildCmd
 
       - name: Push image (Windows native)
         if: runner.os == 'Windows'
