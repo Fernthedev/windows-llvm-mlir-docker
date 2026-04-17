@@ -43,6 +43,18 @@ ENV CMAKE_GENERATOR=${CMAKE_GENERATOR}
 COPY scripts/build-and-install-mlir.bat C:/BuildTools/build-and-install-mlir.bat
 COPY llvm-project C:/llvm-project
 
+RUN "C:\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && \
+    where python & \
+    where python3 & \
+    dir "C:\BuildTools" /s /b | findstr /i python.exe
+
+ADD https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe C:\\TEMP\\python-installer.exe
+# Install Python system-wide, add to PATH
+RUN C:\TEMP\python-installer.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
+
+# Verify
+RUN python --version || true
+
 # VsDevCmd sets up MSVC + Python (from Workload.Python) in one call
 RUN "C:\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && \
     C:\BuildTools\build-and-install-mlir.bat
