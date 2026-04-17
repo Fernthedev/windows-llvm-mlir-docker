@@ -9,10 +9,6 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --installPath "C:\BuildTools" \
     --add Microsoft.VisualStudio.Workload.VCTools \
     --add Microsoft.Component.MSBuild \
-    # --add Microsoft.VisualStudio.Component.CoreEditor \
-    # --add Microsoft.VisualStudio.Component.DiagnosticTools \
-    # --add Microsoft.VisualStudio.Component.Roslyn.Compiler \
-    # --add Microsoft.VisualStudio.Component.TextTemplating \
     --add Microsoft.VisualStudio.Component.VC.CMake.Project \
     --add Microsoft.VisualStudio.Component.VC.CoreIde \
     --add Microsoft.VisualStudio.Component.VC.Llvm.Clang \
@@ -24,7 +20,6 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Workload.Python \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang \
-    # --add Microsoft.VisualStudio.Workload.CoreEditor \
     --add Microsoft.VisualStudio.Workload.NativeDesktop \
     --add Microsoft.VisualStudio.Component.Git \
     --includeRecommended \
@@ -43,11 +38,6 @@ ENV CMAKE_GENERATOR=${CMAKE_GENERATOR}
 COPY scripts/build-and-install-mlir.bat C:/BuildTools/build-and-install-mlir.bat
 COPY llvm-project C:/llvm-project
 
-RUN "C:\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && \
-    where python & \
-    where python3 & \
-    dir "C:\BuildTools" /s /b | findstr /i python.exe
-
 ADD https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe C:\\TEMP\\python-installer.exe
 # Install Python system-wide, add to PATH
 RUN C:\TEMP\python-installer.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
@@ -64,7 +54,7 @@ FROM vs-buildtools AS dev
 SHELL ["cmd", "/S", "/C"]
 
 COPY --from=build-mlir C:/mlir-install C:/mlir-install
-COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
+# COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
 
 ENV PATH="C:\mlir-install\bin;%PATH%"
 
