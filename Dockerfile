@@ -25,6 +25,8 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --includeRecommended \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0
 
+RUN dir C:
+RUN dir C:\BuildTools
 RUN dir C:\TEMP
 RUN type C:\TEMP\dd_vs_buildtools*.log || echo "No log found"
 
