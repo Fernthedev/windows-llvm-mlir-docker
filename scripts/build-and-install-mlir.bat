@@ -14,7 +14,7 @@ if not exist "%SRC_DIR%" (
 )
 
 REM Verify Python is available (provided by Workload.Python via VsDevCmd)
-python --version || (echo ERROR: Python not found in VS environment & exit /b 1)
+python3 --version || (echo ERROR: Python not found in VS environment & exit /b 1)
 
 if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
 mkdir "%BUILD_DIR%"
