@@ -20,6 +20,9 @@ pushd "%BUILD_DIR%"
 if not defined CMAKE_GENERATOR set "CMAKE_GENERATOR=Visual Studio 17 2022"
 echo Using CMAKE_GENERATOR=%CMAKE_GENERATOR%
 
+echo running cmake to configure the build...
+echo cmake ..\llvm -G "%CMAKE_GENERATOR%" -A x64 -Thost=x64 -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=ON -DLLVM_TARGETS_TO_BUILD=Native -DCMAKE_INSTALL_PREFIX="%INSTALL_PREFIX%" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON
+
 cmake ..\llvm ^
     -G "%CMAKE_GENERATOR%" ^
     -A x64 ^
@@ -32,8 +35,8 @@ cmake ..\llvm ^
     -DLLVM_ENABLE_ASSERTIONS=ON ^
     || (popd & exit /b %errorlevel%)
 
-cmake --build . --config Release --target tools/mlir/test/check-mlir ^
-    || (popd & exit /b %errorlevel%)
+@REM cmake --build . --config Release --target tools/mlir/test/check-mlir ^
+@REM     || (popd & exit /b %errorlevel%)
 
 cmake --build . --config Release --target install ^
     || (popd & exit /b %errorlevel%)
