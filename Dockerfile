@@ -17,6 +17,7 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache \
     --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
     --add Microsoft.VisualStudio.Component.Vcpkg \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
     --add Microsoft.VisualStudio.Workload.Python \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core \
     --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang \

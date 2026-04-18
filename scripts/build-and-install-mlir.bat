@@ -39,28 +39,11 @@ cmake -S "%SRC_DIR%\llvm" -B "%BUILD_DIR%" ^
     -DLLVM_TARGETS_TO_BUILD=Native ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DCMAKE_INSTALL_PREFIX="%INSTALL_PREFIX%" ^
-    -DLLVM_ENABLE_ASSERTIONS=ON ^
-    > "%LOG_DIR%\cmake-config.log" 2>&1 || (
-        echo CMake configure failed. Dumping %LOG_DIR%\cmake-config.log
-        type "%LOG_DIR%\cmake-config.log"
-        popd
-        @REM exit /b %errorlevel%
-    )
+    -DLLVM_ENABLE_ASSERTIONS=ON
 
 echo Building and installing using `cmake --install` (logs in %LOG_DIR%)...
-cmake --build "%BUILD_DIR%" --config Release -- /m > "%LOG_DIR%\cmake-build.log" 2>&1 || (
-    echo Build failed. Dumping %LOG_DIR%\cmake-build.log
-    type "%LOG_DIR%\cmake-build.log"
-    popd
-    @REM exit /b %errorlevel%
-)
-
-cmake --install "%BUILD_DIR%" --config Release --prefix "%INSTALL_PREFIX%" --verbose > "%LOG_DIR%\cmake-install.log" 2>&1 || (
-    echo Install failed. Dumping %LOG_DIR%\cmake-install.log
-    type "%LOG_DIR%\cmake-install.log"
-    popd
-    @REM exit /b %errorlevel%
-)
+cmake --build "%BUILD_DIR%" --config Release
+cmake --install "%BUILD_DIR%" --config Release --prefix "%INSTALL_PREFIX%" --verbose
 
 REM verify install
 if exist "%INSTALL_PREFIX%\bin" (
