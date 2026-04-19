@@ -45,11 +45,13 @@ echo Building and installing using `cmake --install` (logs in %LOG_DIR%)...
 cmake --build "%BUILD_DIR%" --config Release
 cmake --install "%BUILD_DIR%" --config Release --prefix "%INSTALL_PREFIX%" --verbose
 
+dir "%INSTALL_PREFIX%"
+
 REM verify install
 if exist "%INSTALL_PREFIX%\bin" (
     echo Installed to %INSTALL_PREFIX%
 ) else (
-    echo ERROR: expected install prefix missing (%INSTALL_PREFIX%). Dumping logs...
+    echo ERROR: expected install prefix missing at %INSTALL_PREFIX%. Dumping logs...
     type "%LOG_DIR%\cmake-config.log"
     type "%LOG_DIR%\cmake-build.log"
     type "%LOG_DIR%\cmake-install.log"
