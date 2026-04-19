@@ -47,9 +47,9 @@ cmake --install "%BUILD_DIR%" --config Release --prefix "%INSTALL_PREFIX%" --ver
 
 REM verify install
 if exist "%INSTALL_PREFIX%\bin" (
-    echo Installed to %INSTALL_PREFIX% > "%LOG_DIR%\result.log"
+    echo Installed to %INSTALL_PREFIX%
 ) else (
-    echo ERROR: expected install prefix missing (%INSTALL_PREFIX%). Dumping logs... > "%LOG_DIR%\result.log"
+    echo ERROR: expected install prefix missing (%INSTALL_PREFIX%). Dumping logs...
     type "%LOG_DIR%\cmake-config.log"
     type "%LOG_DIR%\cmake-build.log"
     type "%LOG_DIR%\cmake-install.log"
