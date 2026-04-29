@@ -113,6 +113,16 @@ jobs:
           $tags = '${{ steps.meta.outputs.tags }}'
           if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
           $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+          # Ensure an explicit :latest tag is included so GHCR has a latest alias
+          $latestTag = "ghcr.io/${{ github.repository_owner }}/vs-mlir-windows:latest"
+          if (-not ($tagList -contains $latestTag)) { $tagList += $latestTag }
+          # If this run corresponds to a git tag, add that tag as an image tag as well
+          $ref = '${{ github.ref }}'
+          if ($ref -match 'refs/tags/(.+)') {
+            $gitTag = $Matches[1]
+            $gitTagFull = "ghcr.io/${{ github.repository_owner }}/vs-mlir-windows:$gitTag"
+            if (-not ($tagList -contains $gitTagFull)) { $tagList += $gitTagFull }
+          }
           $tagArgs = $tagList | ForEach-Object { "-t `"$_`"" }
           $attempt=0
           while ($attempt -lt 3) {
@@ -152,6 +162,16 @@ jobs:
           $tags = '${{ steps.meta.outputs.tags }}'
           if (-not $tags) { Write-Error 'No tags from metadata-action'; exit 1 }
           $tagList = ($tags -split '[,\r\n\s]+' ) | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+          # Ensure we push an explicit :latest tag as well
+          $latestTag = "ghcr.io/${{ github.repository_owner }}/vs-mlir-windows:latest"
+          if (-not ($tagList -contains $latestTag)) { $tagList += $latestTag }
+          # If this run corresponds to a git tag, ensure that image gets the same tag
+          $ref = '${{ github.ref }}'
+          if ($ref -match 'refs/tags/(.+)') {
+            $gitTag = $Matches[1]
+            $gitTagFull = "ghcr.io/${{ github.repository_owner }}/vs-mlir-windows:$gitTag"
+            if (-not ($tagList -contains $gitTagFull)) { $tagList += $gitTagFull }
+          }
           foreach ($t in $tagList) {
             Write-Host "Pushing $t"
             docker push $t
