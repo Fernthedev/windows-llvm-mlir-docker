@@ -32,7 +32,7 @@ RUN dir C:\BuildTools
 RUN dir C:\TEMP
 RUN type C:\TEMP\dd_vs_buildtools*.log || echo "No log found"
 
-# Stage 2: Build MLIR
+# Stage 2: Build MLIR (builder stage)
 FROM vs-buildtools AS build-mlir
 SHELL ["cmd", "/S", "/C"]
 
@@ -50,13 +50,25 @@ RUN C:\TEMP\python-installer.exe /quiet InstallAllUsers=1 PrependPath=1 Include_
 RUN python --version || true
 
 # VsDevCmd sets up MSVC + Python (from Workload.Python) in one call
-RUN "C:\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && \
-    C:\BuildTools\build-and-install-mlir.bat
+RUN call "C:\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=amd64 && \
+    call C:\BuildTools\build-and-install-mlir.bat
+
+# Cleanup large build artifacts and caches to keep the builder layer lean
+# delete temporary installers, source tree, and installer caches in the same layer
+RUN if exist C:\TEMP rmdir /s /q C:\TEMP || echo NoTemp && \
+    if exist C:\llvm-project rmdir /s /q C:\llvm-project || echo NoSrc && \
+    if exist C:\BuildTools\vs_buildtools.exe del /q C:\BuildTools\vs_buildtools.exe || echo NoInstaller && \
+    if exist C:\ProgramData\PackageCache rmdir /s /q C:\ProgramData\PackageCache || echo NoPackageCache || echo Cleaned
+
 
 # Stage 3: Final dev image
 FROM vs-buildtools AS dev
 SHELL ["cmd", "/S", "/C"]
 
+# Create target runtime dirs
+RUN mkdir C:\mlir-install
+
+# Copy only the installed runtime files from the builder (no BuildTools, no sources)
 COPY --from=build-mlir C:/mlir-install C:/mlir-install
 # COPY scripts/entrypoint-vcvars.bat C:/init-vcvars.bat
 

@@ -88,6 +88,27 @@ jobs:
         run: |
           docker system prune -af
 
+      - name: Check free disk and auto-prune if low
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $minFreeGB = 50
+          $freeGB = 0
+          try {
+            $freeGB = [math]::Round((Get-PSDrive -Name C).Free /1GB,2)
+          } catch {
+            Write-Host "Could not get PSDrive info; attempting WMI"
+            $freeBytes = (Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='C:'").FreeSpace
+            if ($freeBytes) { $freeGB = [math]::Round($freeBytes /1GB,2) }
+          }
+          Write-Host "Runner free space: $freeGB GB"
+          if ($freeGB -lt $minFreeGB) {
+            Write-Host "Free space ($freeGB GB) is below threshold ($minFreeGB GB) — running docker system prune"
+            docker system prune -af --volumes
+          } else {
+            Write-Host "Sufficient free space; skipping auto-prune."
+          }
+
     # https://github.com/moby/buildkit/issues/6009
     #   - name: Set up Docker Buildx
     #     uses: docker/setup-buildx-action@v4
@@ -168,17 +189,39 @@ jobs:
           # Normalize tags to lowercase to satisfy Docker's repository name requirements
           $tagList = $tagList | ForEach-Object { $_.ToLower() }
           $owner = '${{ github.repository_owner }}'.ToLower()
-          # Ensure we push an explicit :latest tag as well
-          $latestTag = "ghcr.io/$owner/vs-mlir-windows:latest"
-          if (-not ($tagList -contains $latestTag)) { $tagList += $latestTag }
-          # If this run corresponds to a git tag, ensure that image gets the same tag
-          $ref = '${{ github.ref }}'
-          if ($ref -match 'refs/tags/(.+)') {
-            $gitTag = $Matches[1]
-            $gitTagFull = "ghcr.io/$owner/vs-mlir-windows:$gitTag"
-            if (-not ($tagList -contains $gitTagFull)) { $tagList += $gitTagFull }
-          }
-          foreach ($t in $tagList) {
-            Write-Host "Pushing $t"
-            docker push $t
+            # Decide which tags to actually push to avoid publishing large intermediate artifacts.
+            $pushList = @()
+
+            # Always include :latest
+            $pushList += "ghcr.io/$owner/vs-mlir-windows:latest"
+
+            # If this is a branch build, push the branch tag (e.g., :main)
+            $ref = '${{ github.ref }}'
+            if ($ref -match 'refs/heads/(.+)') {
+              $branch = $Matches[1].ToLower()
+              $pushList += "ghcr.io/$owner/vs-mlir-windows:$branch"
+            }
+
+            # If this is a git tag build, push the git tag
+            if ($ref -match 'refs/tags/(.+)') {
+              $gitTag = $Matches[1]
+              $pushList += "ghcr.io/$owner/vs-mlir-windows:$gitTag"
+            }
+
+            # If caller provided an explicit input tag, include it
+            $inputTag = '${{ github.event.inputs.tag }}'
+            if (-not [string]::IsNullOrEmpty($inputTag)) {
+              $pushList += "ghcr.io/$owner/vs-mlir-windows:$inputTag"
+            }
+
+            # Deduplicate and only push tags that exist in the built tag list
+            $pushList = $pushList | ForEach-Object { $_.ToLower() } | Select-Object -Unique
+            $existing = $tagList | ForEach-Object { $_.ToLower() }
+            $toPush = $pushList | Where-Object { $existing -contains $_ }
+
+            if (-not $toPush) { Write-Host "No matching final tags to push; skipping push."; exit 0 }
+
+            foreach ($t in $toPush) {
+              Write-Host "Pushing $t"
+              docker push $t
           }
